@@ -99,6 +99,31 @@ ln -s "$PWD/skills/novel-characters" ~/.claude/skills/novel-characters
 ln -s "$PWD/skills/novel-characters" ~/.codex/skills/novel-characters
 ```
 
+## Web 工作台
+
+项目附带一个零依赖的本地 Web 工作台：选择 skill 后复制所需 Markdown 到外部网页 LLM，拿回 JSON 文件上传，服务器执行对应的 `validate` / `render`，并在页面中预览报告。
+
+```bash
+node web/server.mjs
+```
+
+浏览器访问 `http://127.0.0.1:3100`。工作台不调用 LLM，也不需要 Claude Code 或 codex；它只负责 Markdown 指令、JSON 校验和 HTML 报告渲染。分镜报告需要同时上传 `script.json`，其他上游 JSON 按页面提示选择上传。
+
+工作台产生的上传文件与报告保存在项目目录下的 `web/data/`，该目录已加入 `.gitignore`。如果项目部署在 `/data/workspace/shuohao-skills`，实际保存位置就是 `/data/workspace/shuohao-skills/web/data/`。生产环境可以让 Nginx 反向代理到 `127.0.0.1:3100`；不要直接暴露 Node 端口。
+
+Ubuntu 上建议使用 systemd 持久运行：
+
+```ini
+[Service]
+User=<项目目录所有者>
+WorkingDirectory=/data/workspace/shuohao-skills
+ExecStart=/usr/bin/node /data/workspace/shuohao-skills/web/server.mjs
+Environment=PORT=3100
+Restart=always
+```
+
+Nginx 使用独立域名反向代理到 `http://127.0.0.1:3100`。当前工作台没有登录认证，仅适合 MVP 验证；上传内容保存在 `web/data/`。
+
 ## 前置条件
 
 | | 必需？ | 说明 |

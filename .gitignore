@@ -25,5 +25,8 @@ node_modules/
 
 .playwright-mcp/
 
+# Web 工作台的上传文件与渲染报告
+/web/data/
+
 # 门失败累积日志（用户在自己的输出目录里生成的）
 .gates.jsonl

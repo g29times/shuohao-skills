@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>说皓 AI 短剧工作台</title>
+  <style>
+    :root{--bg:#f1f2f0;--panel:#fff;--ink:#20252a;--muted:#6d747b;--line:#d9ddd8;--accent:#8a3324;--accent-soft:#f4e8e4;--ok:#2f6549;--shadow:0 12px 35px #20252a12}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+    .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 60px}.eyebrow{color:var(--accent);font-size:12px;letter-spacing:.18em;text-transform:uppercase}.head{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:25px}.head h1{margin:4px 0 0;font:600 30px/1.2 Georgia,"Songti SC",serif}.head p{max-width:500px;margin:0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:310px 1fr;gap:18px}.panel{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px}.skills{padding:12px}.skill{display:block;width:100%;border:0;background:transparent;text-align:left;padding:15px 14px;border-radius:6px;color:var(--ink);cursor:pointer}.skill:hover{background:#f5f6f4}.skill.active{background:var(--accent);color:#fff}.skill strong{display:block;font-size:16px}.skill span{display:block;color:var(--muted);font-size:13px}.skill.active span{color:#ead2ca}.main{padding:24px}.section-title{display:flex;justify-content:space-between;align-items:center;gap:15px;border-bottom:1px solid var(--line);padding-bottom:13px;margin-bottom:18px}.section-title h2{font-size:20px;margin:0}.badge{font-size:12px;padding:3px 8px;border-radius:20px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}.hint{color:var(--muted);font-size:13px;margin:0 0 10px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:4px;padding:9px 14px;cursor:pointer;font:inherit}.button.primary{background:var(--accent);border-color:var(--accent);color:#fff}.button:disabled{opacity:.5;cursor:not-allowed}.prompt{width:100%;height:315px;resize:vertical;border:1px solid var(--line);border-radius:5px;padding:13px;background:#fafbf9;color:#30363b;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace}.upload{margin-top:24px;padding-top:19px;border-top:1px solid var(--line)}.upload h3{margin:0 0 5px;font-size:16px}.files{display:grid;gap:10px}.file-row{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px dashed #bcc4bd;border-radius:5px;padding:11px 13px;background:#fbfcfb}.file-row label{font-weight:600}.file-row small{display:block;color:var(--muted);font-weight:400}.file-row input{max-width:260px}.status{margin-top:16px;padding:12px 14px;border-radius:5px;background:#f4f6f3;color:var(--muted);white-space:pre-wrap;font-size:13px}.status.ok{background:#eaf3ed;color:var(--ok)}.status.bad{background:#faece9;color:var(--accent)}.report{margin-top:20px;display:none}.report.show{display:block}.report iframe{width:100%;height:760px;border:1px solid var(--line);background:#fff;border-radius:5px}.empty{padding:50px 20px;text-align:center;color:var(--muted)}
+    @media(max-width:800px){.grid{grid-template-columns:1fr}.head{display:block}.head p{margin-top:10px}.file-row{display:block}.file-row input{max-width:100%;margin-top:8px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="head"><div><div class="eyebrow">SHUOHAO · WORKBENCH</div><h1>AI 短剧工作台</h1></div><p>选择一个 skill，复制工作指令到外部网页 LLM 执行；拿回 JSON 后，在这里校验并生成可访问的报告。</p></header>
+    <div class="grid">
+      <aside class="panel skills" id="skills"><div class="empty">正在加载 skill…</div></aside>
+      <section class="panel main">
+        <div class="section-title"><h2 id="skill-title">选择 skill</h2><span class="badge" id="skill-id">—</span></div>
+        <p class="hint">下方内容包含所选 skill 的工作流程和参考文档，复制后粘贴到外部网页 LLM。建议先让 LLM 生成 JSON，再上传回来。</p>
+        <textarea class="prompt" id="prompt" readonly placeholder="选择左侧 skill 后加载 Markdown 内容"></textarea>
+        <div class="actions"><button class="button primary" id="copy" disabled>复制 Markdown 指令</button></div>
+        <div class="upload">
+          <h3>上传 LLM 生成的 JSON</h3>
+          <p class="hint">服务器会执行该 skill 的 validate 和 render；校验失败时仍会尝试渲染，并在报告顶部显示问题。</p>
+          <div class="files" id="files"></div>
+          <div class="actions"><button class="button primary" id="render" disabled>校验并生成报告</button></div>
+        </div>
+        <div class="status" id="status">请选择 skill。</div>
+        <div class="report" id="report"><div class="section-title"><h2>渲染结果</h2><a class="button" id="open" target="_blank" rel="noopener">新窗口打开</a></div><iframe id="frame" title="报告预览"></iframe></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const state = { skills: [], selected: null, prompt: '' };
+    const $ = (id) => document.getElementById(id);
+    const files = {};
+    const dependencyLabels = { outline: 'outline.json（上游大纲）', cast: 'cast.json（上游角色）', art: 'art.json（上游美术）', script: 'script.json（上游剧本，分镜必需）' };
+    async function loadSkills() {
+      state.skills = await (await fetch('/api/skills')).json();
+      const box = $('skills'); box.textContent = '';
+      state.skills.forEach((skill, index) => { const button = document.createElement('button'); button.className = 'skill'; button.dataset.id = skill.id; button.innerHTML = `<strong>${skill.label}</strong><span>${skill.description}</span>`; button.onclick = () => selectSkill(skill.id); box.append(button); if (index === 0) selectSkill(skill.id); });
+    }
+    let selectionRequest = 0;
+    async function selectSkill(id) {
+      const requestId = ++selectionRequest;
+      state.selected = state.skills.find((skill) => skill.id === id); if (!state.selected) return;
+      document.querySelectorAll('.skill').forEach((button) => button.classList.toggle('active', button.dataset.id === id));
+      $('skill-title').textContent = state.selected.label; $('skill-id').textContent = state.selected.id; $('copy').disabled = true; $('render').disabled = true; $('prompt').value = '正在加载 Markdown…'; $('files').textContent = '';
+      const result = await (await fetch(`/api/skills/${id}/prompt`)).json();
+      if (requestId !== selectionRequest) return;
+      state.prompt = result.content; $('prompt').value = state.prompt; $('copy').disabled = false; renderFiles(); setStatus('已加载 Markdown。复制后交给外部网页 LLM 执行。');
+    }
+    function renderFiles() { const box = $('files'); box.textContent = ''; addFile('main', '本 skill 的 JSON', `${state.selected.id}.json`, true); state.selected.needs.forEach((need) => addFile(need, dependencyLabels[need], `${need}.json`, need === 'script' && state.selected.id === 'novel-storyboard')); }
+    function addFile(key, label, accept, required) { const box = $('files'); const row = document.createElement('div'); row.className = 'file-row'; const text = document.createElement('label'); text.textContent = label; const small = document.createElement('small'); small.textContent = required ? '必需' : '可选'; text.append(small); const input = document.createElement('input'); input.type = 'file'; input.accept = '.json,application/json'; input.onchange = () => { files[key] = input.files[0] || null; $('render').disabled = !files.main; }; row.append(text, input); box.append(row); }
+    async function readFile(file) { return { name: file.name, content: await file.text() }; }
+    function setStatus(text, kind = '') { $('status').textContent = text; $('status').className = `status ${kind}`; }
+    $('copy').onclick = async () => { await navigator.clipboard.writeText(state.prompt); setStatus('Markdown 指令已复制。'); };
+    $('render').onclick = async () => { if (!files.main) return; $('render').disabled = true; setStatus('正在校验并生成报告…'); try { const dependencies = {}; for (const need of state.selected.needs) if (files[need]) dependencies[need] = await readFile(files[need]); const body = { skillId: state.selected.id, file: await readFile(files.main), dependencies }; const response = await fetch('/api/render', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || '处理失败'); const note = result.valid ? '校验通过，报告已生成。' : `报告已生成，但校验未通过：\n${result.validation}`; setStatus(note, result.valid ? 'ok' : 'bad'); $('frame').src = result.reportUrl; $('open').href = result.reportUrl; $('report').classList.add('show'); } catch (error) { setStatus(error.message, 'bad'); } finally { $('render').disabled = !files.main; } };
+    loadSkills().catch((error) => setStatus(`初始化失败：${error.message}`, 'bad'));
+  </script>
+</body>
+</html>
