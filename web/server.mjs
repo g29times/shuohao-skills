@@ -115,7 +115,9 @@ async function renderReport(payload) {
   const validation = await runNode(validationArgs, jobDir);
   const rendered = await runNode(renderArgs, jobDir);
   if (!rendered.ok || !rendered.stdout.trim().startsWith('<!doctype html>')) {
-    throw new Error(`报告渲染失败：${rendered.stderr || '脚本没有输出 HTML'}`);
+    const validationInfo = validation.ok ? '' : `\n校验输出：\n${validation.stdout}${validation.stderr}`.trim();
+    const renderInfo = (rendered.stderr || '脚本没有输出 HTML').trim();
+    throw new Error(`报告渲染失败：${renderInfo}${validationInfo ? `\n\n${validationInfo}` : ''}`);
   }
   await writeFile(join(jobDir, 'report.html'), rendered.stdout);
   return {

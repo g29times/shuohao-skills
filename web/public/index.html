@@ -14,11 +14,11 @@
 </head>
 <body>
   <main class="wrap">
-    <header class="head"><div><div class="eyebrow">SHUOHAO · WORKBENCH</div><h1>AI 短剧工作台</h1></div><p>选择一个 skill，复制工作指令到外部网页 LLM 执行；拿回 JSON 后，在这里校验并生成可访问的报告。</p></header>
+    <header class="head"><div><div class="eyebrow">YMENG · WORKBENCH</div><h1>AI 短剧工作台</h1></div><p>选择一个 skill，复制工作指令到外部网页 LLM 执行；拿回 JSON 后，在这里校验并生成可访问的报告。</p></header>
     <div class="grid">
       <aside class="panel skills">
         <div class="flow-head">工作流程</div>
-        <div class="flow-note">按顺序推进；中间三项可以相互校正，分镜只接收已经确定的内容。</div>
+        <div class="flow-note">选择一个 skill，复制工作指令到外部网页 LLM 执行；拿回 JSON 后，在这里校验并生成可访问的报告。按顺序推进；中间三项可以相互校正，分镜只接收已经确定的内容。</div>
         <div class="flow-step external"><strong>01 · 小说原文</strong><span>素材来源 · 交给外部网页 LLM</span></div>
         <div class="flow-line">↓</div>
         <div id="outline-step" class="flow-slot"></div>
@@ -36,7 +36,7 @@
         <div class="actions"><button class="button primary" id="copy" disabled>复制指令</button><a class="button" href="https://chat.deepseek.com/" target="_blank" rel="noopener noreferrer">前往 DeepSeek</a><a class="button" href="https://www.doubao.com/chat/" target="_blank" rel="noopener noreferrer">前往豆包</a><a class="button" href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer">前往 Gemini</a><a class="button" href="https://claude.ai/chat/" target="_blank" rel="noopener noreferrer">前往 Claude</a></div>
         <div class="upload">
           <h3>上传 LLM 生成的 JSON</h3>
-          <p class="hint">服务器会执行该 skill 的 validate 和 render；校验失败时仍会尝试渲染，并在报告顶部显示问题。</p>
+          <p class="hint">服务器会执行该 skill 的 validate 和 render。文件不仅要是合法 JSON，还要符合当前 skill 的字段结构；校验失败时会尝试渲染，并在报告顶部显示问题。</p>
           <div class="files" id="files"></div>
           <div class="actions"><button class="button primary" id="render" disabled>校验并生成报告</button></div>
         </div>
