@@ -33,7 +33,7 @@
         <div class="section-title"><h2 id="skill-title">选择 skill</h2><span class="badge" id="skill-id">—</span></div>
         <p class="hint">下方内容包含所选 skill 的工作流程和参考文档，复制后粘贴到外部网页 LLM。建议先让 LLM 生成 JSON，再上传回来。</p>
         <textarea class="prompt" id="prompt" readonly placeholder="选择左侧 skill 后加载 Markdown 内容"></textarea>
-        <div class="actions"><button class="button primary" id="copy" disabled>复制 Markdown 指令</button></div>
+        <div class="actions"><button class="button primary" id="copy" disabled>复制指令</button><a class="button" href="https://chat.deepseek.com/" target="_blank" rel="noopener noreferrer">前往 DeepSeek</a><a class="button" href="https://www.doubao.com/chat/" target="_blank" rel="noopener noreferrer">前往豆包</a><a class="button" href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer">前往 Gemini</a><a class="button" href="https://claude.ai/chat/" target="_blank" rel="noopener noreferrer">前往 Claude</a></div>
         <div class="upload">
           <h3>上传 LLM 生成的 JSON</h3>
           <p class="hint">服务器会执行该 skill 的 validate 和 render；校验失败时仍会尝试渲染，并在报告顶部显示问题。</p>
